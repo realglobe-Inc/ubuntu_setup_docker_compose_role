@@ -1,0 +1,30 @@
+---
+- name: check docker-compose command
+  shell: which docker-compose
+  register: command
+  changed_when: no
+  ignore_errors: yes
+
+- name: docker compose name
+  shell: echo docker-compose-$(uname -s)-$(uname -m)
+  register: docker_compose_name
+  changed_when: no
+
+- name: install docker-compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/{{ docker_compose_name.stdout }}
+    dest: /usr/local/bin/docker-compose
+
+- name: chmod +x docker-compose
+  file:
+    path: /usr/local/bin/docker-compose
+    mode: +x
+
+- name: docker-compose version
+  shell: docker-compose --version
+  register: version
+  changed_when: no
+
+- name: debug docker-compose version
+  debug:
+    msg: "{{ version.stdout }}"
